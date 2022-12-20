@@ -18,6 +18,7 @@ class PriceListScreen extends StatefulWidget {
 class _PriceListScreenState extends State<PriceListScreen> {
   bool _isWorking = true;
   String _selectedDate = '';
+
   var url =
       Uri.https('openapi.izmir.bel.tr', 'api/ibb/halfiyatlari/sebzemeyve/');
 
@@ -30,6 +31,8 @@ class _PriceListScreenState extends State<PriceListScreen> {
   }
 
   HalFiyatlari halFiyatlari = HalFiyatlari();
+  List<HalFiyatListesi> halFiyatListesi =
+      List.generate(0, (index) => HalFiyatListesi());
   TextEditingController controller = TextEditingController();
 
   @override
@@ -43,8 +46,17 @@ class _PriceListScreenState extends State<PriceListScreen> {
       setState(() {
         _isWorking = false;
         halFiyatlari = value;
+        halFiyatListesi = value!.halFiyatListesi!;
       });
     });
+  }
+
+  void search(String filter) {
+    halFiyatListesi = halFiyatlari!.halFiyatListesi!
+        .where((p) => p.malAdi!.toUpperCase().contains(filter.toUpperCase()))
+        .toList();
+
+    setState(() {});
   }
 
   Future<void> _showMyDialog() async {
@@ -74,8 +86,7 @@ class _PriceListScreenState extends State<PriceListScreen> {
                 });
               },
               validator: (val) {
-                print(val);
-                return null;
+                search(val!);
               },
               onSaved: (val) => print(val),
             ),
@@ -113,14 +124,17 @@ class _PriceListScreenState extends State<PriceListScreen> {
                         border: OutlineInputBorder(),
                         hintText: 'ARAMAK İSTEDİĞİNİZ MEYVE/SEBZE',
                       ),
+                      onSubmitted: (value) {
+                        search(value);
+                      },
                     ),
                   ),
                   Expanded(
                     child: ListView.builder(
-                        itemCount: halFiyatlari.halFiyatListesi!.length,
+                        itemCount: halFiyatListesi!.length,
                         itemBuilder: (BuildContext context, int index) {
-                          HalFiyatListesi halFiyatListesi =
-                              halFiyatlari.halFiyatListesi![index];
+                          HalFiyatListesi fiyatListesi =
+                              halFiyatListesi![index];
                           return Padding(
                             padding: const EdgeInsets.all(2.0),
                             child: Card(
@@ -131,18 +145,18 @@ class _PriceListScreenState extends State<PriceListScreen> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        halFiyatListesi!.malAdi!,
+                                        fiyatListesi!.malAdi!,
                                         style: TextStyle(fontSize: 20.0),
                                       ),
                                       Text(
-                                        halFiyatListesi!.ortalamaUcret!,
+                                        fiyatListesi!.ortalamaUcret!,
                                         style: TextStyle(fontSize: 20.0),
                                       ),
                                     ],
                                   ),
                                   Image.network(
                                     'https://eislem.izmir.bel.tr/YuklenenDosyalar/HalGorselleri/' +
-                                        halFiyatListesi!.gorsel!,
+                                        fiyatListesi!.gorsel!,
                                     width: 120,
                                   ),
                                 ],
